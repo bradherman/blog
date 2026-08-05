@@ -1,0 +1,27 @@
+/**
+ * blog.bherms.com — a static site served by Cloudflare Workers Assets.
+ *
+ * There is no Worker script: `assets.directory` alone is enough to serve the
+ * built site, which keeps it on the free tier and removes a moving part.
+ * The custom domain provisions its own DNS record and certificate on deploy,
+ * so no manual DNS change is needed.
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "blog",
+	"compatibility_date": "2026-07-31",
+	"assets": {
+		"directory": "./dist",
+		"not_found_handling": "404-page",
+		"html_handling": "auto-trailing-slash"
+	},
+	"routes": [
+		{
+			"pattern": "blog.bherms.com",
+			"custom_domain": true
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}

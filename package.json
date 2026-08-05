@@ -1,0 +1,15 @@
+{
+	"name": "blog",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "node build.mjs",
+		"dev": "node build.mjs && wrangler dev",
+		"deploy": "node build.mjs && wrangler deploy",
+		"test": "node test/model.test.mjs"
+	},
+	"devDependencies": {
+		"wrangler": "^4.112.0"
+	}
+}

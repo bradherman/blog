@@ -1,0 +1,25 @@
+{
+  "slug": "the-wave-runs-backwards",
+  "title": "The Wave Runs Backwards",
+  "eyebrow": "Traffic flow \u00b7 three simulators you can drive",
+  "deck": "You are eighth in line at a red light. It turns green, and for about four seconds nothing happens to you at all. What you are waiting for is a wave: it travels toward you, through the queue, at roughly twenty kilometres an hour, in the wrong direction. This is a piece about that wave; about a second one at a lane closure, where the advice almost everybody follows depends on a condition that rarely travels with it; and about what five miles an hour actually buys you.",
+  "byline": "Everything below runs live in your browser. Move the sliders; the numbers are computed from the simulation, not looked up.",
+  "date": "2026-07-31",
+  "description": "Why a green light wastes its first two seconds, where the best place to zip at a lane closure actually is, and what five miles an hour costs. Three live simulators.",
+  "tags": [
+    "traffic",
+    "simulation",
+    "interactive"
+  ],
+  "scripts": [
+    "js/core.js",
+    "js/light-sim.js",
+    "js/merge-sim.js",
+    "js/speed-sim.js",
+    "js/boot.js"
+  ],
+  "disclosure": {
+    "tag": "Mostly AI",
+    "note": "Written by Claude: the prose, the simulations and the analysis. I set the questions, pushed back on the framing, and asked for most of what makes it useful. Fuller note at the end."
+  }
+}

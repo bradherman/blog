@@ -1,0 +1,1174 @@
+<!-- ==================================================================== -->
+  <section id="part-one">
+    <p class="section-tag">Part one</p>
+    <h2>The green light that wastes its first two seconds</h2>
+
+    <p>
+      Start with the familiar part. The light turns green. The first car
+      moves. Then the second. Then the third. By the time the release reaches
+      you, several seconds of your green are gone, and if the queue is long
+      enough you will watch the light cycle back to red without ever having
+      touched the accelerator.
+    </p>
+
+    <p>
+      The intuition most people have about this is that it is a discipline problem:
+      if everyone were paying attention, the queue would move off together and the
+      whole thing would be fixed. That intuition is half right, and the wrong half is
+      the one that explains the delay.
+    </p>
+
+    <h3>The light doesn't release the queue. It releases one car.</h3>
+
+    <p>
+      A signal has exactly one direct customer: the vehicle at the stop line.
+      Everybody else is released not by the light but by the car in front of them.
+      That distinction is the whole mechanism.
+    </p>
+
+    <p>
+      Each driver needs some interval between <em>the car ahead began to move</em> and
+      <em>I begin to move</em>. Call it&nbsp;τ: perception, recognition, decision, and
+      the mechanical business of getting off the brake and onto the accelerator.
+      Nobody is being lazy. For an alert driver expecting the change it runs around
+      0.9 to 1.2 seconds. For someone who just looked back up from a phone it can be
+      three or four.
+    </p>
+
+    <p>
+      Chain that together and the <em>n</em>th driver in the queue starts moving at
+      roughly <em>n</em>·τ after the light changes. The boundary between
+      "still stopped" and "now moving" travels backwards through the queue at a speed
+      set by two numbers and nothing else:
+    </p>
+
+    <figure class="eq">
+      <div class="eq-body"><span class="eq-lhs">w</span> = <span class="eq-frac"><span>s</span><span>τ</span></span></div>
+      <figcaption>
+        <b>w</b> — how fast the release travels backwards ·
+        <b>s</b> — centre-to-centre spacing of the stopped cars ·
+        <b>τ</b> — reaction time
+      </figcaption>
+    </figure>
+
+    <p>
+      Put ordinary numbers in. Stopped cars sit about seven metres apart, centre to
+      centre: a 4.8&nbsp;m vehicle and a 2.2&nbsp;m gap. With τ&nbsp;=&nbsp;1.2&nbsp;s
+      that gives 5.8&nbsp;m/s, or about <strong>21&nbsp;km/h, backwards</strong>.
+    </p>
+
+    <p>
+      The simulator below measures it at closer to 16, and the shortfall is
+      expected. The formula assumes you can move the instant you decide to,
+      and you cannot: the car ahead has to open enough room first. Waiting for
+      that room adds roughly 0.3&nbsp;seconds per vehicle on top of τ, and the
+      measured wave tracks <span class="mono">s / (τ + 0.3)</span> closely
+      across the whole slider range.
+    </p>
+
+    <p>
+      You can check the consequence in a few seconds. Drag τ to zero, so that
+      nobody reacts at all and the whole queue is released by the light
+      itself, and the wave does not disappear. It settles at about
+      22&nbsp;km/h, set purely by how long it takes for space to appear. The
+      floor here is geometry itself, and no amount of attention gets
+      underneath it.
+    </p>
+
+    <p>
+      Derive it a completely different way and it holds. Macroscopic
+      kinematic-wave theory, which knows nothing about individual drivers and
+      sees only flow and density, puts the shockwave speed between a jammed
+      state and a saturated one at about 18&nbsp;km/h, and field studies of
+      start-up waves report values in the same 15–20&nbsp;km/h band. Traffic
+      engineering treats it as close to a constant.
+    </p>
+
+    <p>
+      You meet the same wave, running the same direction, on a motorway when
+      brake lights ripple toward you out of a jam a kilometre ahead. Traffic's
+      characteristic speeds point upstream, which is why nothing you do with
+      your own car ever seems to help.
+    </p>
+
+    <h3>Two different reasons you haven't moved yet</h3>
+
+    <p>
+      The third lane in the simulator exists for this. Take the same queue and
+      let it accelerate as a single body: every driver going at the same
+      instant, at the same rate, holding the same spacing. Now nobody is
+      waiting to react and nobody is waiting for room. The wave does not get
+      faster; it stops existing, and the queue crosses the stop line as one
+      object.
+    </p>
+
+    <p>
+      Lining the three up splits the delay into its two parts:
+    </p>
+
+    <figure class="regimes">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">How the queue is released</th>
+            <th scope="col">Vehicles per green</th>
+            <th scope="col">Start-up wave</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><i class="key key-s1"></i>Human, τ&nbsp;=&nbsp;1.2&nbsp;s</th>
+            <td>13.0</td><td>16 km/h</td>
+          </tr>
+          <tr>
+            <th scope="row"><i class="key key-s3"></i>No reaction, still waits for room</th>
+            <td>14.0 <span class="delta">+8%</span></td><td>23 km/h</td>
+          </tr>
+          <tr>
+            <th scope="row"><i class="key key-s2"></i>Moves as one body</th>
+            <td>17.6 <span class="delta">+35%</span></td><td>none</td>
+          </tr>
+        </tbody>
+      </table>
+      <figcaption>
+        At 1,400&nbsp;veh/h with the default driver settings. These are the
+        simulator's numbers, computed live, so they will move as you do. The
+        third row in particular keeps climbing the longer you leave it
+        running: the junction stops binding that lane, which is limited only
+        by how many vehicles turn up, so a longer queue simply means more of
+        them get served.
+      </figcaption>
+    </figure>
+
+    <p>
+      Reaction time, which everybody blames, is the smaller share. The larger
+      one is geometric. Even with perfect drivers, a car cannot move into
+      space that does not exist yet, and the space arrives one vehicle at a
+      time, travelling backwards. What gets past it is <em>coupling</em>: the
+      cars accelerating together because they are, in some operational sense,
+      a single vehicle.
+    </p>
+
+    <p>
+      A queue coupled like that is a train. A fully automated platoon would be
+      roughly the same object: vehicles that have stopped reacting to each
+      other at all, because each already knows what the one in front is about
+      to do. The third lane is on screen because it locates the ceiling, and
+      the ceiling sits at whether the queue is a queue or a body, well past
+      the limit of human reflexes.
+    </p>
+
+    <h3>What the delay costs</h3>
+
+    <p>
+      Traffic engineers fold this into a quantity called <em>start-up lost time</em>:
+      the seconds at the beginning of a green that produce no vehicles because the
+      queue is still unfolding. The Highway Capacity Manual's default is
+      2.0&nbsp;seconds per phase; some agencies use 3.0. Against a saturation headway
+      of about 1.9&nbsp;seconds per vehicle, that is a little over one vehicle per
+      green, per lane, thrown away.
+    </p>
+
+    <p>
+      One vehicle. If every driver at every signal in a city reacted
+      instantly, you would get roughly <strong>7% more traffic through the
+      same greens</strong>: a gain worth having, and far short of the
+      transformation the intuition promises. Hold onto that number (the
+      simulator measures about 7½), because the rest of this section is about
+      why it is so small.
+    </p>
+
+    <div class="callout">
+      <p class="callout-head">The rig</p>
+      <p>
+        Three identical streams of traffic, the same signal, the same arrivals
+        down to the second. The first is human. The second deletes reaction
+        time and leaves everything else alone: every driver releases the brake
+        the instant the light changes, but still has to wait for room to open
+        in front of them. The third deletes that too: the whole queue
+        accelerates as one body, holding its spacing, from the moment of
+        green. Only the first is possible. The other two are there to separate
+        the two different reasons you are still sitting still.
+      </p>
+    </div>
+
+    <!-- ---------------------------------------------------------------- -->
+    <figure class="rig" id="light-sim">
+      <div class="rig-head">
+        <h4>Simulator 1 · Queue discharge at a signal</h4>
+        <div class="rig-head-right">
+          <span id="ls-phase" class="phase-pill phase-red">RED</span>
+          <button id="ls-signal" class="btn" type="button">Turn green</button>
+          <button id="ls-auto" class="btn btn-quiet" type="button" hidden>Auto</button>
+          <span class="speed" role="group" aria-label="Simulation speed">
+            <button class="spd" type="button" data-speed="1">1×</button>
+            <button class="spd" type="button" data-speed="2" aria-pressed="true">2×</button>
+            <button class="spd" type="button" data-speed="4">4×</button>
+            <button class="spd" type="button" data-speed="8">8×</button>
+          </span>
+          <button id="ls-play" class="btn" type="button" aria-pressed="true">Pause</button>
+          <button id="ls-reset" class="btn btn-quiet" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div class="rig-stage">
+        <canvas id="light-road" class="cv cv-road" role="img"
+          aria-label="Animated top-down view of three lanes of traffic discharging from a red light: human reaction time, zero reaction time, and a queue that moves as one body."></canvas>
+        <button class="stage-start" id="ls-start" type="button">
+          <span class="stage-start-pill">▶ Start the simulation</span>
+        </button>
+      </div>
+
+      <div class="rig-presets" role="group" aria-label="Driver presets">
+        <span class="preset-label">Presets</span>
+        <button class="chip" type="button" data-preset="typical" aria-pressed="true">Typical drivers</button>
+        <button class="chip" type="button" data-preset="attentive">Fully attentive</button>
+        <button class="chip" type="button" data-preset="distracted">Distracted</button>
+        <button class="chip" type="button" data-preset="platoon">Automated platoon</button>
+      </div>
+
+      <div class="rig-controls">
+        <div class="ctrl">
+          <label for="ls-tau">Reaction time <span class="sym">τ</span></label>
+          <input type="range" id="ls-tau" min="0" max="2.5" step="0.1" value="1.2">
+          <output id="ls-tau-val" for="ls-tau">1.2 s</output>
+        </div>
+        <div class="ctrl">
+          <label for="ls-gap">Gap left when stopped <span class="sym">s₀</span></label>
+          <input type="range" id="ls-gap" min="0.5" max="7" step="0.1" value="2.0">
+          <output id="ls-gap-val" for="ls-gap">2.0 m</output>
+        </div>
+        <div class="ctrl">
+          <label for="ls-accel">Acceleration</label>
+          <input type="range" id="ls-accel" min="0.8" max="3.5" step="0.1" value="1.8">
+          <output id="ls-accel-val" for="ls-accel">1.8 m/s²</output>
+        </div>
+        <div class="ctrl">
+          <label for="ls-headway">Following headway <span class="sym">T</span></label>
+          <input type="range" id="ls-headway" min="0.5" max="2.5" step="0.05" value="1.2">
+          <output id="ls-headway-val" for="ls-headway">1.2 s</output>
+        </div>
+        <div class="ctrl">
+          <label for="ls-green">Green time</label>
+          <input type="range" id="ls-green" min="12" max="60" step="1" value="30">
+          <output id="ls-green-val" for="ls-green">30 s</output>
+        </div>
+        <div class="ctrl">
+          <label for="ls-demand">Arriving traffic</label>
+          <input type="range" id="ls-demand" min="300" max="1800" step="25" value="1400">
+          <output id="ls-demand-val" for="ls-demand">1400 veh/h</output>
+        </div>
+      </div>
+
+      <div class="rig-stats rig-stats-split" role="group" aria-label="Measured results">
+        <div class="tile-row">
+        <div class="tile tile-hero">
+          <span class="tile-val" id="ls-out-cleared">—</span>
+          <span class="tile-lab">vehicles per green<br><span class="tile-sub">human reaction</span></span>
+        </div>
+        <div class="tile tile-hero">
+          <span class="tile-val" id="ls-out-gain">—</span>
+          <span class="tile-lab">if reaction were zero<br><span class="tile-sub">but still waiting for room</span></span>
+        </div>
+        <div class="tile tile-hero">
+          <span class="tile-val" id="ls-out-rigid">—</span>
+          <span class="tile-lab">if the queue moved as one<br><span class="tile-sub">no reaction, no room needed</span></span>
+        </div>
+        </div>
+        <div class="tile-row">
+        <div class="tile"><span class="tile-val" id="ls-out-wave">—</span><span class="tile-lab">start-up wave<br><span class="tile-sub">km/h backwards</span></span></div>
+        <div class="tile"><span class="tile-val" id="ls-out-lost">—</span><span class="tile-lab">start-up lost time<br><span class="tile-sub">seconds</span></span></div>
+        <div class="tile"><span class="tile-val" id="ls-out-headway">—</span><span class="tile-lab">saturation headway<br><span class="tile-sub">seconds/vehicle</span></span></div>
+        <div class="tile"><span class="tile-val" id="ls-out-queue">—</span><span class="tile-lab">queue at the line<br><span class="tile-sub">metres</span></span></div>
+        </div>
+      </div>
+
+      <div class="rig-split">
+        <div class="legend" aria-hidden="true">
+          <span class="legend-title">Vehicle speed</span>
+          <span class="ramp"></span>
+          <span class="legend-ends"><span>stopped</span><span>free flow</span></span>
+        </div>
+        <div class="switches">
+          <label class="switch">
+            <input type="checkbox" id="ls-show-ideal" checked>
+            <span>Zero reaction time</span>
+          </label>
+          <label class="switch">
+            <input type="checkbox" id="ls-show-rigid" checked>
+            <span>Moves as one body</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="rig-stage rig-stage-plot">
+        <canvas id="light-spacetime" class="cv cv-plot" role="img"
+          aria-label="Space-time diagram of vehicle trajectories. Flat lines are stopped vehicles; the diagonal front where they end is the start-up wave travelling backwards through the queue."></canvas>
+        <div class="plot-legend">
+          <span><i class="key key-s1"></i>Human reaction</span>
+          <span><i class="key key-s3"></i>Zero reaction</span>
+          <span><i class="key key-s2"></i>Moves as one body</span>
+        </div>
+      </div>
+
+      <details class="rig-table">
+        <summary>Table view</summary>
+        <table>
+          <thead><tr><th scope="col">Measure</th><th scope="col">Human</th><th scope="col">Zero reaction</th><th scope="col">As one body</th></tr></thead>
+          <tbody id="ls-table-body"></tbody>
+        </table>
+      </details>
+
+      <figcaption>
+        <b>Top:</b> the road, seen from above, 300&nbsp;m of approach, one lane per
+        release regime. <b>Bottom:</b> the same traffic as a space–time diagram, distance up the axis, time to the
+        right. Each thin line is one vehicle. Flat stretches are stopped cars; the
+        diagonal edge where those flat lines end, sloping down and to the right, is
+        the start-up wave.
+      </figcaption>
+    </figure>
+
+    <h3>Why no single fix helps very much</h3>
+
+    <p>
+      <b>Drag reaction time to zero.</b> The two lanes separate immediately, and the
+      space–time diagram shows why: the diagonal release front collapses toward
+      vertical. Watch the vehicles-per-green figure, though. It moves by about one
+      car, roughly 7½ per cent.
+    </p>
+
+    <p>
+      <b>Put it back, and halve the following headway instead.</b> This is the gap you
+      keep once you are <em>moving</em>: a completely different mechanism, governing
+      how tightly the discharging queue packs rather than when it starts. It buys about
+      7½ per cent.
+    </p>
+
+    <p>
+      <b>Put that back, and try the parking gap, in either direction.</b> The
+      parking gap refuses to cooperate. Tighter is worse, wider is worse, and
+      there is no free improvement sitting in it at all. It gets its own
+      section below.
+    </p>
+
+    <p>
+      Two unrelated improvements, the same answer to within a rounding error.
+      Queue discharge is limited by whichever constraint is currently worst,
+      so relieving any single one simply hands the job to the next in line.
+      Reaction time stops mattering the moment the cars are packed too tightly
+      to accelerate freely. Following distance stops mattering while everyone
+      is still waiting to be released.
+    </p>
+
+    <p>
+      Now do all of them at once (the <b>Automated platoon</b> preset) and the
+      same road carries <strong>about a third more traffic</strong>, because
+      nothing is left to bind. Automating vehicles pays almost nothing until
+      most of them are automated, for the same reason. A platoon of one is
+      just a car.
+    </p>
+
+    <p>
+      The asymmetry runs the other way, and much harder. Improving any single thing
+      gains you seven or eight per cent. <em>Degrading</em> a single thing costs far
+      more: set reaction time to 2.5&nbsp;s (a driver glancing up from a phone) and
+      throughput falls 38%. The system rewards competence weakly and punishes
+      inattention severely, which is an uncomfortable but reasonably accurate
+      description of driving.
+    </p>
+
+    <h3>The other half of the question: how far apart you park</h3>
+
+    <p>
+      There is a second version of this: the space you leave in front of you
+      when you are <em>stopped</em>. Two different things hide inside that one habit,
+      and they need separating.
+    </p>
+
+    <p>
+      Start with the mechanism. A driver pulls away only once there is
+      somewhere to pull away <em>to</em>, and that moment arrives some time
+      after the car ahead starts moving. In the model that is literal. A
+      vehicle parked at exactly its minimum gap has an acceleration of
+      precisely zero: it cannot move at all until the car ahead has made room
+      for it. Park a car length and a half back instead and the room is
+      already there, so it launches at nearly full acceleration the moment its
+      driver reacts.
+    </p>
+
+    <p>
+      Parking further back does buy something, and you can watch it. Drag the
+      <span class="mono">s₀</span> slider up and keep your eye on the start-up
+      wave. At a one-metre gap it crawls backwards at about 13&nbsp;km/h. At
+      six metres it is moving at 24. More than double, with nobody reacting
+      any faster; the room simply already exists.
+    </p>
+
+    <p>
+      And yet the vehicles-per-green figure barely moves, and past a point it
+      gets worse. Every metre of extra parking gap is a metre that every car
+      behind you must also drive before it reaches the line, so the earlier
+      launch and the longer journey very nearly cancel.
+    </p>
+
+    <p>
+      There is a best gap, then, and what it depends on is reaction time.
+    </p>
+
+    <figure class="regimes">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">If your reaction time is…</th>
+            <th scope="col">…the best gap to park at is</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">0.4 s — fully alert</th><td>5–6 m</td></tr>
+          <tr><th scope="row">0.8 s</th><td>3–4 m</td></tr>
+          <tr><th scope="row">1.2 s — ordinary</th><td>2–2.5 m</td></tr>
+          <tr><th scope="row">1.8 s</th><td>1 m</td></tr>
+          <tr><th scope="row">2.5 s — distracted</th><td>1 m</td></tr>
+        </tbody>
+      </table>
+      <figcaption>
+        The gap that minimises how long a standing queue of fifteen cars takes to
+        clear, measured across the reaction times on the slider.
+      </figcaption>
+    </figure>
+
+    <p>
+      The quicker your reactions, the further back you should park. The folk
+      picture has it exactly backwards, with careful drivers leaving room and
+      impatient ones closing it up. Again it is the "whichever constraint
+      binds" argument. If you react quickly, what is stopping you is the
+      absence of room, so making the room in advance pays. If you react
+      slowly, the room opens up while you are still noticing the light, so
+      parking further back buys you nothing and charges you the extra distance
+      anyway.
+    </p>
+
+    <p>
+      At an ordinary 1.2 seconds the optimum lands around two to two and a half metres,
+      which, at the resolution this model can claim, is about what people
+      already do. Human parking habits appear to be roughly tuned to human reaction
+      times.
+    </p>
+
+    <p>
+      The one unambiguous mistake is parking too close. Pull up a metre off the car in
+      front and throughput drops about 7%: you have taken away your own room to launch
+      and got nothing for it. The queue is shorter, admittedly, and that still matters
+      for the reason it always did. A queue that reaches back far enough blocks the
+      junction behind it, and a blocked junction fails in a way that no amount of green
+      time at <em>this</em> signal can repair.
+    </p>
+
+    <p class="aside">
+      A modelling note, since this section turns on it. The gap a driver
+      leaves when parking and the minimum gap they keep once rolling are two
+      different numbers, and an earlier version of this simulator used one
+      value for both. Using one value hid the effect: widening the parking gap
+      also widened everyone's following distance at speed, so the launch
+      benefit was buried under a throughput penalty that had nothing to do
+      with parking. They are separate parameters now: the slider is the
+      parking gap, and the in-motion minimum is held at 2&nbsp;m.
+    </p>
+
+  </section>
+
+  <!-- ==================================================================== -->
+  <section id="part-two">
+    <p class="section-tag">Part two</p>
+    <h2>The lane closure, and the advice that comes with a missing condition</h2>
+
+    <p>
+      Most of us carry around a version of this. There is a sign: right lane
+      closed ahead. The courteous thing, the thing that keeps traffic moving,
+      is to move over as soon as you see it. The drivers who sail past the
+      queue in the closing lane and force their way in at the cones are the
+      reason everyone else is stopped.
+    </p>
+
+    <p>
+      All of that is intuitive, widely held, and, when traffic is heavy,
+      backwards. The reason it <em>feels</em> right is sound. The mistake is
+      in what people attribute it to.
+    </p>
+
+    <h3>What the agencies actually recommend</h3>
+
+    <p>
+      Minnesota's DOT runs a public campaign for the opposite behaviour, which it calls
+      the <em>zipper merge</em>: use both lanes right up to the merge point, then take
+      turns, one for one. It credits the practice with cutting backup length by up to
+      40–50%, removing the speed differential between lanes, and reducing the
+      aggressive last-second manoeuvres that cause work-zone collisions. Several other
+      states have followed. MnDOT's own guidance attaches a condition:
+      the zipper merge is for congested conditions, with a volume warrant around
+      1,500&nbsp;vehicles per hour. Below that, merging early is the better advice.
+    </p>
+
+    <p>
+      Nothing about that warrant survives the trip into folk wisdom, which is
+      why the two pieces of advice you have heard sound contradictory. They
+      are both correct. They apply to different roads.
+    </p>
+
+    <h3>Three separate quantities, usually confused for one</h3>
+
+    <p>
+      Almost all of the argument dissolves once you stop treating "traffic" as one
+      thing. There are three, and merge strategy affects them very differently.
+    </p>
+
+    <ol class="numbered">
+      <li>
+        <p><b>Throughput — how many cars per hour get past the closure.</b></p>
+        <p>
+          This is set by the bottleneck, and the bottleneck is one lane of road. A
+          work-zone lane carries somewhere around 1,400–1,700&nbsp;vehicles per hour.
+          No merge strategy changes that number, because no merge strategy adds a lane.
+          If more cars want through than the lane can pass, a queue forms, and it
+          forms whether people merged a kilometre back or at the cones. Merging early
+          does not create capacity. The simulator makes that very hard to keep
+          believing.
+        </p>
+      </li>
+      <li>
+        <p><b>Queue length — how far back the jam physically reaches.</b></p>
+        <p>
+          Here the strategies differ enormously, and the reason is pure
+          geometry. The same number of waiting vehicles stored in two lanes
+          occupies half the road length it does in one. The 40–50% figure
+          comes out of that arithmetic alone. It matters because queue length
+          is what determines whether the backup stays inside the work zone's
+          approach or reaches back and swallows the previous interchange, at
+          which point the delay stops being linear and starts being someone
+          else's problem too.
+        </p>
+      </li>
+      <li>
+        <p><b>Breakdown — whether the bottleneck runs smoothly or in stop-and-go.</b></p>
+        <p>
+          Once a bottleneck breaks down into stop-and-go, its discharge rate drops
+          several per cent below the capacity it had while flowing: the
+          <em>capacity drop</em>. Every forced merge, every vehicle that runs out of
+          road and has to be let in from a standstill, injects a backward wave that
+          pushes the bottleneck toward that state. This is the quantity that merge
+          behaviour damages, and it is where the folk wisdom is picking up something
+          true.
+        </p>
+      </li>
+    </ol>
+
+    <h3>Why the intuition feels so right</h3>
+
+    <p>
+      Because you have almost never seen a real zipper merge. What you have seen is
+      the mixed case: half the drivers move over early because they were told to, half
+      run to the cones, and there is no shared convention governing what happens at the
+      point of contact.
+    </p>
+
+    <p>
+      Mixed, it produces every pathology at once. The closing lane is empty
+      enough that arriving drivers approach at speed and meet a stopped queue,
+      which is the speed differential that makes work zones dangerous. The
+      drivers who merged early feel cheated, and some of them straddle the
+      lane line to enforce fairness, which converts two lanes into zero. And
+      the drivers who did run to the front arrive with no gap arranged, stop,
+      and have to be admitted from rest. Admitting them stops the through lane
+      as well, and sends a wave backwards through everybody who did the right
+      thing.
+    </p>
+
+    <p>
+      Your experience is accurate: those late mergers really did make it
+      worse. What is wrong is the conclusion, because what hurt was not that
+      they merged late. It was that they merged late <em>into a system that
+      had not agreed to it</em>. A zipper merge where everybody zips is
+      orderly. A zipper merge where half the participants are running a
+      different protocol is a fight.
+    </p>
+
+    <div class="callout">
+      <p class="callout-head">The rig</p>
+      <p>
+        Two lanes, one closure, 3.2&nbsp;km of approach. The three strategies
+        see an identical sequence of arriving vehicles (same seed, same
+        instants, same drivers), so anything that differs between them can
+        only be merge behaviour. <b>Run all three</b> simulates each for nine
+        minutes of traffic and puts the results side by side.
+      </p>
+    </div>
+
+    <!-- ---------------------------------------------------------------- -->
+    <figure class="rig" id="merge-sim">
+      <div class="rig-head">
+        <h4>Simulator 2 · A lane closure</h4>
+        <div class="rig-head-right">
+          <span class="speed" role="group" aria-label="Simulation speed">
+            <button class="spd" type="button" data-speed="1">1×</button>
+            <button class="spd" type="button" data-speed="2.2" aria-pressed="true">2×</button>
+            <button class="spd" type="button" data-speed="5">5×</button>
+            <button class="spd" type="button" data-speed="10">10×</button>
+          </span>
+          <button id="mg-play" class="btn" type="button" aria-pressed="true">Pause</button>
+          <button id="mg-reset" class="btn btn-quiet" type="button">Reset</button>
+        </div>
+      </div>
+
+      <div class="rig-presets">
+        <label class="switch">
+          <input type="checkbox" id="mg-compare-toggle" checked>
+          <span>Compare two strategies side by side, same traffic</span>
+        </label>
+      </div>
+
+      <div class="panel" id="mg-panel-a">
+        <div class="panel-head">
+          <div class="chips" role="group" aria-label="Top panel strategy">
+            <button class="chip" type="button" data-side="a" data-mode="early">Everyone merges early</button>
+            <button class="chip" type="button" data-side="a" data-mode="zipper">Zipper merge</button>
+            <button class="chip" type="button" data-side="a" data-mode="custom">Set the merge point</button>
+            <button class="chip" type="button" data-side="a" data-mode="mixed" aria-pressed="true">Mixed — no convention</button>
+          </div>
+          <div class="panel-metrics">
+            <span><b id="mg-a-thru">—</b> veh/h</span>
+            <span><b id="mg-a-queue">—</b> km queue</span>
+            <span><b id="mg-a-delay">—</b> s delay</span>
+            <span><b id="mg-a-stuck">—</b> stranded</span>
+          </div>
+        </div>
+        <canvas id="mg-road" class="cv cv-wz" role="img"
+          aria-label="The last 640 metres before the closure, Top panel strategy."></canvas>
+        <canvas id="mg-corridor" class="cv cv-strip" role="img"
+          aria-label="The full 3.2 kilometre approach coloured by speed, Top panel strategy."></canvas>
+        <button class="stage-start" id="mg-start" type="button">
+          <span class="stage-start-pill">▶ Start the simulation</span>
+        </button>
+      </div>
+
+      <div class="panel" id="mg-panel-b">
+        <div class="panel-head">
+          <div class="chips" role="group" aria-label="Bottom panel strategy">
+            <button class="chip" type="button" data-side="b" data-mode="early">Everyone merges early</button>
+            <button class="chip" type="button" data-side="b" data-mode="zipper" aria-pressed="true">Zipper merge</button>
+            <button class="chip" type="button" data-side="b" data-mode="custom">Set the merge point</button>
+            <button class="chip" type="button" data-side="b" data-mode="mixed">Mixed — no convention</button>
+          </div>
+          <div class="panel-metrics">
+            <span><b id="mg-b-thru">—</b> veh/h</span>
+            <span><b id="mg-b-queue">—</b> km queue</span>
+            <span><b id="mg-b-delay">—</b> s delay</span>
+            <span><b id="mg-b-stuck">—</b> stranded</span>
+          </div>
+        </div>
+        <canvas id="mg-road-b" class="cv cv-wz" role="img"
+          aria-label="The last 640 metres before the closure, Bottom panel strategy."></canvas>
+        <canvas id="mg-corridor-b" class="cv cv-strip" role="img"
+          aria-label="The full 3.2 kilometre approach coloured by speed, Bottom panel strategy."></canvas>
+      </div>
+
+      <div class="rig-controls rig-controls-2">
+        <div class="ctrl">
+          <label for="mg-demand">Traffic demand</label>
+          <input type="range" id="mg-demand" min="600" max="3600" step="50" value="2400">
+          <output id="mg-demand-val" for="mg-demand">2400 veh/h</output>
+        </div>
+        <div class="ctrl">
+          <label for="mg-coop">Drivers willing to let someone in</label>
+          <input type="range" id="mg-coop" min="0" max="100" step="5" value="60">
+          <output id="mg-coop-val" for="mg-coop">60%</output>
+        </div>
+        <div class="ctrl ctrl-wide">
+          <label for="mg-mergeback">Merge point, metres before the closure <span class="sym">(“Set the merge point” only)</span></label>
+          <input type="range" id="mg-mergeback" min="10" max="900" step="10" value="80">
+          <output id="mg-mergeback-val" for="mg-mergeback">80 m</output>
+        </div>
+      </div>
+
+      <div class="rig-split">
+        <div class="legend" aria-hidden="true">
+          <span class="legend-title">Vehicle speed</span>
+          <span class="ramp"></span>
+          <span class="legend-ends"><span>stopped</span><span>free flow</span></span>
+        </div>
+        <div class="batch">
+          <button id="mg-compare" class="btn btn-accent" type="button">Run all three</button>
+          <span id="mg-progress" class="batch-progress" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+
+      <div id="mg-chart" class="cmp"></div>
+      <details class="rig-table">
+        <summary>Table view</summary>
+        <table id="mg-chart-table"></table>
+      </details>
+
+      <figcaption>
+        Each panel shows the same traffic meeting the same closure, differing only
+        in how its drivers merge. <b>Upper strip:</b> the last 640&nbsp;m before the
+        closure. <b>Lower strip:</b> the whole 3.2&nbsp;km approach, each 25&nbsp;m
+        section coloured by the average speed of the vehicles in it, with the queue
+        bracketed and a marker showing where lane changes are actually happening.
+      </figcaption>
+    </figure>
+
+    <h3>What you should find</h3>
+
+    <p>
+      <b>At low demand, nothing matters.</b> Drop the demand slider to
+      900&nbsp;veh/h. One lane comfortably carries it, no queue forms, and all
+      three strategies produce identical numbers. Low demand is the condition
+      under which merging early is the better advice, for a reason that has
+      nothing to do with throughput: there is no traffic to move, and a lane
+      change at 100&nbsp;km/h is best done early and calmly, far from the
+      cones.
+    </p>
+
+    <p>
+      <b>Above capacity, throughput converges and queue length does not.</b> Push
+      demand past about 2,000&nbsp;veh/h and run all three. The throughput bars land
+      within a few per cent of one another, since they are all measuring the same
+      single lane, while the queue bars separate. In this model the zipper's queue comes out
+      roughly a quarter shorter than the early-merge queue, and its average delay about
+      a third lower. Field studies report larger queue reductions, up to 40–50%. The
+      direction is the robust part; the magnitude is the model's.
+    </p>
+
+    <p>
+      <b>Cooperation pays, but only where the outcome is still in doubt.</b>
+      Set the strategy to zipper, put demand near 2,000&nbsp;veh/h, and move
+      the cooperation slider from 0 to 100%. Average delay falls by about a
+      sixth. Now push demand to 3,000 and try the same thing: almost nothing
+      happens. Once demand is far beyond what one lane can carry, the
+      bottleneck is saturated however politely anyone behaves, and the queue
+      grows at the difference between arrival and capacity. Courtesy decides
+      whether a marginal bottleneck breaks down. It cannot rescue a hopeless
+      one.
+    </p>
+
+    <p>
+      <b>And the mixed case is not clearly the worst, in this model.</b> The
+      argument would be tidier if it were. With merging spread along the road,
+      the mixed case sometimes posts the highest throughput of the three; at
+      high demand it posts the worst delay. It is erratic more than it is
+      uniformly bad. The case against it outside the model is strong, and
+      rests on the speed differential between a stopped lane and a moving one,
+      the crash risk that creates, and the drivers who straddle the line to
+      police the queue. None of that is in here, and I have not put it in to
+      make the result come out the way the argument wants.
+    </p>
+
+    <p>
+      <b>And there is a best place to zip.</b> Pick <b>Set the merge point</b> on
+      either panel and move the distance slider. Aim for the last ten or twenty metres
+      and the model starts producing drivers who reach the cones, find nobody will let
+      them in, and stop dead. The stranded counter climbs, and it climbs faster when
+      fewer drivers are willing to yield. Back off to fifty or a hundred metres and
+      that failure disappears while the throughput actually improves by a few per
+      cent, because the merge is now a negotiation between two moving vehicles rather
+      than a standing car trying to launch into a moving queue. Go much beyond two
+      hundred metres and it degrades again for a different reason: the merge point
+      becomes a second bottleneck upstream of the first.
+    </p>
+
+    <p>
+      In practice the rule is narrower than "merge late" and much narrower
+      than "merge early". <em>Use both lanes, and aim to be in the through
+      lane by about a hundred metres before the cones: moving, alongside a
+      gap, not fighting for the last car length.</em> A zipper merge is
+      exactly that, and it is the reading that survives the simulator.
+    </p>
+
+    <p>
+      What survives all of that is the part the geometry guarantees. Above
+      capacity a queue must exist, and the only question left is how much road
+      it occupies. Stored in two lanes it is half as long as stored in one,
+      and queue length is what decides whether the backup stays inside the
+      work zone's approach or reaches back and takes out the interchange
+      behind it.
+    </p>
+
+    <p class="aside">
+      Where the model is generous to the zipper: real drivers are worse than these
+      ones. There is no road rage in here, nobody straddles the lane line to police
+      the queue, and heavy vehicles (which change everything about gap acceptance)
+      are absent. Where it is harsh: real zipper merges benefit from signage and
+      enforcement that this model has no way to represent. The direction of the result
+      is robust; treat the exact percentages as the model's, not the world's.
+    </p>
+  </section>
+
+  <!-- ==================================================================== -->
+  <section id="part-bonus">
+    <p class="section-tag">Bonus</p>
+    <h2>The arithmetic of five miles an hour</h2>
+
+    <p>
+      Both of the situations above are cases where a small individual gain and a
+      large collective cost sit on opposite sides of the same decision. There is a
+      third, and almost everybody makes it several times a day. Here is the arithmetic.
+    </p>
+
+    <p>
+      Twenty miles at sixty takes twenty minutes. Twenty miles at sixty-five
+      takes eighteen minutes and twenty-eight seconds. The entire prize is
+      <strong>ninety-two seconds</strong>, and ninety-two is the ceiling. One
+      red light you would otherwise have missed, one slow left turn, one
+      moment behind a bus, and it is gone before you arrive.
+    </p>
+
+    <h3>What you are buying it with</h3>
+
+    <p>
+      The standard tool here is Nilsson's power model, which relates a change in
+      traffic speed to a change in crash outcomes: fatal crashes scale with roughly
+      the <em>fourth</em> power of speed, fatal-or-serious with the third, all injury
+      crashes with the second. Those exponents come from decades of before-and-after
+      studies of speed-limit changes, and Elvik's later meta-analyses put the fatal
+      exponent slightly higher still, near 4.9.
+    </p>
+
+    <p>
+      Sixty-five over sixty is a ratio of 1.083. Raised to the fourth power it is
+      1.38. So the ninety-two seconds cost you something like a
+      <strong>38% increase in the risk of a fatal crash</strong> for the duration of
+      the trip.
+    </p>
+
+    <p class="aside">
+      Nilsson&rsquo;s model relates changes in the <em>mean speed of traffic
+      on a road</em> to changes in <em>crash counts on that road</em>.
+      Applying it to one driver's personal decision is an extrapolation. The
+      individual-level evidence is, if anything, harsher. Kloeden's
+      case-control study of crashes in 60&nbsp;km/h zones, with alcohol
+      controlled and matched control vehicles, found the risk of a casualty
+      crash roughly <em>doubling</em> for every 5&nbsp;km/h above the limit.
+    </p>
+
+    <h3>The number that makes it concrete</h3>
+
+    <p>
+      Percentages are abstract, so put a hazard in the road at exactly the
+      distance where the driver doing the limit can stop: reaction time, then
+      brakes, halting with nothing to spare. The driver doing five over
+      reaches that same point having used more of it up thinking, with less of
+      it left to brake in.
+    </p>
+
+    <p>
+      They do not stop. At sixty versus sixty-five they arrive at the hazard
+      still doing about <strong>thirty miles an hour</strong>. Not five miles
+      an hour faster than a stop: thirty. Speed eats the end of your stopping
+      distance, where all the energy is, and that is why the exponent is four.
+    </p>
+
+    <figure class="rig" id="speed-sim">
+      <div class="rig-head">
+        <h4>Simulator 3 · What the extra speed buys, and what it costs</h4>
+        <div class="rig-head-right">
+          <button id="sp-replay" class="btn" type="button">Play it</button>
+        </div>
+      </div>
+
+      <div class="rig-controls">
+        <div class="ctrl">
+          <label for="sp-limit">Speed limit</label>
+          <input type="range" id="sp-limit" min="25" max="75" step="5" value="60">
+          <output id="sp-limit-val" for="sp-limit">60 mph</output>
+        </div>
+        <div class="ctrl">
+          <label for="sp-over">How far over</label>
+          <input type="range" id="sp-over" min="0" max="25" step="1" value="5">
+          <output id="sp-over-val" for="sp-over">5 mph</output>
+        </div>
+        <div class="ctrl">
+          <label for="sp-miles">Trip distance</label>
+          <input type="range" id="sp-miles" min="2" max="150" step="1" value="20">
+          <output id="sp-miles-val" for="sp-miles">20 mi · 20 min</output>
+        </div>
+        <div class="ctrl">
+          <label for="sp-react">Reaction time</label>
+          <input type="range" id="sp-react" min="0.8" max="2.5" step="0.1" value="1.5">
+          <output id="sp-react-val" for="sp-react">1.5 s</output>
+        </div>
+        <div class="ctrl">
+          <label for="sp-petrol">Petrol price</label>
+          <input type="range" id="sp-petrol" min="2" max="8" step="0.05" value="3.50">
+          <output id="sp-petrol-val" for="sp-petrol">$3.50/gal</output>
+        </div>
+        <div class="ctrl">
+          <label for="sp-kwh">Electricity price</label>
+          <input type="range" id="sp-kwh" min="0.05" max="0.6" step="0.01" value="0.17">
+          <output id="sp-kwh-val" for="sp-kwh">$0.17/kWh</output>
+        </div>
+      </div>
+
+      <div class="rig-stats rig-stats-split" role="group" aria-label="Measured results">
+        <div class="tile-row">
+          <div class="tile tile-hero">
+            <span class="tile-val" id="sp-out-saved">—</span>
+            <span class="tile-lab">saved on the trip<br><span class="tile-sub">best case, nothing in your way</span></span>
+          </div>
+          <div class="tile tile-hero">
+            <span class="tile-val" id="sp-out-fatal">—</span>
+            <span class="tile-lab">risk of a fatal crash<br><span class="tile-sub">Nilsson power model</span></span>
+          </div>
+          <div class="tile tile-hero">
+            <span class="tile-val" id="sp-out-impact">—</span>
+            <span class="tile-lab">mph at impact<br><span class="tile-sub">where the other driver stops in time</span></span>
+          </div>
+        </div>
+        <div class="tile-row">
+          <div class="tile"><span class="tile-val" id="sp-out-injury">—</span><span class="tile-lab">risk of any injury crash</span></div>
+          <div class="tile"><span class="tile-val" id="sp-out-stopping">—</span><span class="tile-lab">extra stopping distance<br><span class="tile-sub">metres</span></span></div>
+          <div class="tile"><span class="tile-val" id="sp-out-extra">—</span><span class="tile-lab">extra fuel for the trip</span></div>
+          <div class="tile"><span class="tile-val" id="sp-out-perhour">—</span><span class="tile-lab">per hour of time bought<br><span class="tile-sub">in fuel alone</span></span></div>
+        </div>
+      </div>
+
+      <div class="rig-stage">
+        <canvas id="sp-stopping" class="cv cv-stop" role="img"
+          aria-label="Two cars approach a hazard placed where the driver at the speed limit can just stop. The faster car does not stop in time."></canvas>
+      </div>
+
+      <div class="rig-stage rig-stage-plot">
+        <canvas id="sp-cost" class="cv cv-cost" role="img"
+          aria-label="Fuel and electricity cost for the trip plotted against cruising speed, for a petrol car and an electric one."></canvas>
+        <div class="plot-legend">
+          <span><i class="key key-s1"></i>Petrol, 32 mpg at 55</span>
+          <span><i class="key key-s3"></i>Electric, 244 Wh/mi at 55</span>
+        </div>
+      </div>
+
+      <details class="rig-table">
+        <summary>Table view</summary>
+        <table>
+          <thead><tr><th scope="col">Measure</th><th scope="col">At the limit</th><th scope="col">Your speed</th></tr></thead>
+          <tbody id="sp-table-body"></tbody>
+        </table>
+      </details>
+
+      <figcaption>
+        <b>Top:</b> a hazard placed exactly at the compliant driver&rsquo;s stopping
+        distance, shown at rest on the outcome; press <b>Play it</b> to watch it
+        happen. <b>Bottom:</b> what the trip costs in fuel and in electricity across
+        the range of cruising speeds, with your two speeds marked. The petrol curve is
+        fitted to the US Department of Energy&rsquo;s measurements of 74 vehicles; the
+        electric one to a constant-speed range test.
+      </figcaption>
+    </figure>
+
+    <h3>And the part that hits your wallet</h3>
+
+    <p>
+      Above about fifty, aerodynamic drag takes over and fuel economy falls away
+      steeply. The Department of Energy&rsquo;s measurements across 74 vehicles put the
+      loss at 12.4% going from 50 to 60&nbsp;mph, another 14% from 60 to 70, and
+      another 15.4% from 70 to 80, which is why they express it as
+      &ldquo;every 5&nbsp;mph over 50 is like paying another 29 cents a gallon.&rdquo;
+    </p>
+
+    <p>
+      Divide the extra fuel by the time it bought and you get the exchange rate.
+      On the default trip it lands around <strong>seven dollars an hour</strong>: you
+      are buying your own time back at below minimum wage, and paying in petrol before
+      you count anything else. Electric cars are cheaper per mile but proportionally
+      <em>worse</em> at this, because with no idling losses to amortise, a larger share
+      of the energy goes straight into pushing air, and the penalty for speed is steeper.
+    </p>
+
+    <p>
+      Run the distance slider out to a two-hour drive and watch that figure.
+      It does not move. Both the fuel you burn and the time you save scale
+      with distance, so the exchange rate between them depends only on the two
+      speeds. A long journey does not make speeding a better deal; it just
+      buys more of the same bad one. Nine minutes on a two-hour drive still
+      costs you the same seven dollars an hour, and still multiplies the risk
+      of every mile of it.
+    </p>
+  </section>
+
+  <!-- ==================================================================== -->
+  <section id="part-three">
+    <p class="section-tag">Taken together</p>
+    <h2>Both problems are the same problem</h2>
+
+    <p>
+      Put the three side by side and one structure runs through all of them.
+    </p>
+
+    <p>
+      Each one is a case where an individual gain is small and immediate, and
+      the corresponding cost is larger, delayed, and paid by somebody else, or
+      by a version of you that has not happened yet. Two seconds of
+      inattention at a green light. A car length gained at a lane closure.
+      Ninety-two seconds on a twenty-mile commute. Each is nearly nothing on
+      its own, which is exactly why each is so easy to take.
+    </p>
+
+    <p>
+      Two of them are literally the same physics. The release front at the
+      signal and the shockwave from a forced merge both travel upstream at
+      close to twenty kilometres an hour, for the same reason (jam spacing
+      divided by reaction time), and neither cares which road it is on. The
+      third has no wave in it at all, but it has the same shape of argument:
+      the quantity you are buying grows linearly and the quantity you are
+      spending grows with the fourth power.
+    </p>
+
+    <p>
+      In all three the fix is coordination. Nobody in any of these simulations
+      needs to drive harder, faster, or with less margin. The gains come from
+      everyone doing the same predictable thing, which is precisely what a
+      road full of strangers is worst at, and precisely what makes a shared
+      convention worth more than any individual&rsquo;s cleverness about it.
+    </p>
+
+    <p>
+      If there is a practical version, it is short. Close up and pay attention
+      at the light, because the queue behind you is longer than the one you
+      can see. Use both lanes at a closure and merge in turn at the merge
+      point, and let the other car in, because a merge that has to happen from
+      a standstill is the one that stops everybody. On the open road, notice
+      that the ninety seconds you are chasing are already spent: you are
+      buying them back at seven dollars an hour in petrol, and underwriting
+      them with a risk that rises four times faster than the speed does.
+    </p>
+
+    <p>
+      When you are stuck,
+      the cause is not in front of you and it is not behind you. It passed through your
+      position a while ago, travelling the other way, and what you are experiencing now
+      is its wake.
+    </p>
+  </section>
+
+  <!-- ==================================================================== -->
+  <section id="model-notes">
+    <p class="section-tag">Appendix</p>
+    <h2>What's actually running</h2>
+
+    <p>
+      Longitudinal motion in both simulators is the <b>Intelligent Driver Model</b>
+      (Treiber, Hennecke &amp; Helbing, 2000), a continuous car-following model where
+      each vehicle's acceleration depends on its own speed, the gap ahead, and the rate
+      at which that gap is closing. Default parameters: desired time headway 1.2&nbsp;s,
+      maximum acceleration 1.8&nbsp;m/s², comfortable deceleration 2.5&nbsp;m/s²,
+      minimum jam gap 2.0&nbsp;m, vehicle length 4.8&nbsp;m. Integration is ballistic at
+      1/60&nbsp;s.
+    </p>
+
+    <p>
+      A driver carries two different minimum gaps: the one they leave when parking
+      behind a stationary car, which is the slider, and the one they keep once rolling,
+      held at 2&nbsp;m. Separating them is what makes the parking-gap question
+      answerable at all: with a single value, widening the parking gap also widens
+      every following distance at speed, and the two effects are impossible to tell
+      apart.
+    </p>
+
+    <p>
+      IDM on its own has no reaction time: vehicles respond instantly. The start-up
+      delay is layered on top as an explicit release rule: a stopped driver may
+      accelerate only τ seconds after whichever cue was actually blocking them, the
+      signal or the vehicle ahead. This is what produces the wave, and setting
+      τ&nbsp;=&nbsp;0 is what makes the impossible comparison lane possible.
+    </p>
+
+    <p>
+      Saturation headway and start-up lost time are measured the way a field engineer
+      would: regress stop-line crossing time against queue position over the saturated
+      part of each platoon, read the headway off the slope, and extrapolate back to
+      vehicle zero for the lost time. The wave speed is a second regression, of
+      release position against release time. Nothing displayed is a stored constant.
+    </p>
+
+    <p>
+      The merge model adds gap acceptance in both directions (a merging driver needs
+      room in front and behind), with the required gap shrinking as they run out of
+      road, and the through-lane driver's required gap shrinking if that driver is one
+      of the cooperative ones. Arrivals are Poisson from a seeded generator, so the
+      three strategies are compared against an identical vehicle-by-vehicle sequence.
+    </p>
+
+    <p>
+      <b>Where the calibration sits.</b> The signal discharges at a saturation
+      headway of about 2.2&nbsp;s, against the Highway Capacity Manual's ideal
+      of 1.9, so this model is roughly 15% pessimistic, mostly because its
+      vehicles are still accelerating as they cross the line rather than
+      arriving at cruising speed. The work-zone lane carries around
+      1,500&nbsp;veh/h, which sits inside the usual 1,400–1,700 field range.
+      Read the percentage differences between scenarios; they hold up far
+      better than the absolute numbers do.
+    </p>
+
+    <p>
+      <b>Deliberately absent:</b> heavy vehicles, lane-width and shoulder effects,
+      grade, weather, turning movements, pedestrians, signal coordination between
+      adjacent junctions, and driver heterogeneity beyond the cooperative/uncooperative
+      split. Any of these would move the numbers. None of them would reverse the two
+      results the post rests on: that the start-up wave costs about a vehicle per
+      green, and that merge strategy moves queue length far more than it moves
+      throughput.
+    </p>
+
+    <p>
+      <b>The speed section</b> uses Nilsson&rsquo;s power model for crash
+      outcomes (exponents 4, 3 and 2 for fatal, fatal-or-serious, and all
+      injury crashes), with the caveat stated in the text that it is a
+      road-level rather than a driver-level relationship. Stopping distances
+      assume a coefficient of friction of 0.8 (dry asphalt, decent tyres) and
+      the reaction time you set on the slider. The petrol curve is fitted to
+      the Department of Energy&rsquo;s figures for 74 vehicles (&minus;12.4%
+      from 50 to 60&nbsp;mph, &minus;14% to 70, &minus;15.4% to 80) with a 1/v
+      term for idle and accessory load; the electric curve is fitted to two
+      constant-speed data points from a single vehicle test, 224.7&nbsp;Wh/mi
+      at 50&nbsp;mph and 366.2&nbsp;Wh/mi at 80. Both default to a
+      representative vehicle, not yours.
+    </p>
+
+    <h3>Who wrote this</h3>
+
+    <p>
+      Claude did: the prose, the three simulators, and the analysis. I set the
+      questions, argued with the answers, and asked for most of what makes
+      it work: the third release lane at the signal, manual control of the
+      light, the side-by-side merge comparison, the slider for where to actually zip,
+      and the entire speed section.
+    </p>
+
+    <p>
+      It pushed back. I came in believing that merging early is the courteous,
+      traffic-saving thing to do and that late mergers cause the jams. The
+      evidence and the model both say otherwise above a certain volume, and
+      the piece says so. When I refined the point (use both lanes, but do not
+      fight for the last car length), that turned into a slider and a sweep,
+      and the model backed it with numbers neither of us had before. Several
+      claims in earlier drafts were wrong and got corrected when the
+      simulation contradicted them; a few results here are messier than the
+      argument would like, and they are reported messy.
+    </p>
+
+    <p>
+      Every quantitative claim above has a test behind it. If the models drift, the
+      numbers stop matching and the suite fails, which is the only reason I am willing
+      to put my name near figures I did not derive myself.
+    </p>
+
+    <h3>Sources</h3>
+    <ul class="refs">
+      <li><a href="https://www.dot.state.mn.us/zippermerge/">MnDOT — Zipper Merge</a></li>
+      <li><a href="https://www.dot.state.mn.us/trafficeng/workzone/doc/When-latemerge-zipper.pdf">MnDOT — When to use the late merge (zipper) system</a> <span class="ref-note">(PDF; volume warrant and conditions)</span></li>
+      <li><a href="https://itre.ncsu.edu/itre-studying-how-zipper-merges-reduce-congestion-at-sites-across-north-carolina/">ITRE, NC State — field study of zipper merges in North Carolina</a></li>
+      <li><a href="https://en.wikipedia.org/wiki/Lost_time">Lost time (traffic engineering)</a> <span class="ref-note">— start-up lost time and HCM defaults</span></li>
+      <li><a href="https://en.wikipedia.org/wiki/Intelligent_driver_model">Intelligent Driver Model</a></li>
+      <li><a href="https://www.toi.no/getfile.php/131013/Publikasjoner/T%C3%98I%20rapporter/2004/740-2004/Repsumm.pdf">Elvik et al. — Speed and road accidents: an evaluation of the Power Model</a> <span class="ref-note">(TØI 740/2004)</span></li>
+      <li><a href="https://www.infrastructure.gov.au/sites/default/files/migrated/roads/safety/publications/2001/pdf/Rural_Speed_1.pdf">Kloeden et al. — Travelling speed and the risk of crash involvement</a> <span class="ref-note">(case-control, individual vehicle speeds)</span></li>
+      <li><a href="https://www.fueleconomy.gov/feg/driveHabits.jsp">US DOE FuelEconomy.gov — driving more efficiently</a></li>
+      <li><a href="https://www.energy.gov/cmei/vehicles/fact-982-june-19-2017-slow-down-save-fuel-fuel-economy-decreases-about-14-when">US DOE Fact #982 — fuel economy versus speed across 74 vehicles</a></li>
+    </ul>
+  </section>
