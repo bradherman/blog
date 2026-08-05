@@ -34,5 +34,15 @@ src/posts/<slug>/         one directory per post
 test/model.test.mjs       headless physics checks for the traffic simulators
 ```
 
-Deploys to `blog.bherms.com` as a Workers custom domain, which provisions its
-own DNS record and certificate — there is no manual DNS step.
+## Deploying
+
+Push to `main`. GitHub Actions runs `npm test`, then `npm run build`, then
+`wrangler deploy`; a failing model check stops the deploy rather than shipping
+a post whose prose contradicts its own simulators. Pull requests run the same
+job without the deploy step.
+
+`npm run deploy` still works from a laptop and is the fallback if Actions is
+down. Both use the wrangler pinned in `package-lock.json`.
+
+The site is a Workers custom domain, which provisions its own DNS record and
+certificate — there is no manual DNS step.

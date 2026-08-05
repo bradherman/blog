@@ -1,0 +1,54 @@
+# Deploy blog.bherms.com to Cloudflare Workers Assets.
+#
+# The model tests run before the build, and a failure stops the deploy. That
+# ordering is the point: test/model.test.mjs asserts every quantitative claim
+# the traffic post makes in prose, so a simulator change that moves one of
+# those numbers fails here rather than shipping a post that contradicts itself.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Never let two deploys race; a later push supersedes an in-flight one.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Model checks
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Pull requests get everything above but stop here — the branch is
+      # verified without publishing. Only pushes to main reach Cloudflare.
+      #
+      # Deploying with the wrangler from package-lock.json rather than
+      # cloudflare/wrangler-action keeps CI on the exact version a local
+      # `npm run deploy` uses; the action installs its own and can drift.
+      - name: Deploy
+        if: github.event_name != 'pull_request'
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

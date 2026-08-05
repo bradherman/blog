@@ -22,6 +22,14 @@ This repo owns only the `blog.` subdomain.
 - `npm test` — headless checks on the traffic post's simulation models
 - `npx wrangler deploy --dry-run` — validate config without publishing
 
+**Deploys are automatic.** Pushing to `main` runs `.github/workflows/deploy.yml`
+(test → build → deploy), so prefer committing and pushing over running
+`npm run deploy` by hand. The manual command still works and is the fallback if
+Actions is unavailable, but a hand deploy from a dirty tree publishes something
+no commit describes. The workflow deploys with the wrangler from
+`package-lock.json`, not `cloudflare/wrangler-action`, so CI and local deploys
+cannot drift apart on version.
+
 To preview without wrangler: `npm run build && (cd dist && python3 -m http.server 8799)`.
 
 ## Architecture
