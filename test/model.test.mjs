@@ -47,7 +47,11 @@ const note = (s) => console.log(`\n${s}`);
 
 /* ---------------------------------------------------------------- the signal */
 
-const BASE = { tau: 1.2, headway: 1.2, accel: 1.8, s0: 2.0, demand: 1500, green: 30 };
+/* `queue` is the standing queue the run starts with. It is pinned here because
+   every discharge figure below depends on the first green being saturated, and
+   leaving it to the widget's default would silently re-tune these bands the next
+   time that default moves. */
+const BASE = { tau: 1.2, headway: 1.2, accel: 1.8, s0: 2.0, demand: 1500, green: 30, queue: 40 };
 
 function light(overrides, seconds = 2400) {
   const sim = new T.LightSim();

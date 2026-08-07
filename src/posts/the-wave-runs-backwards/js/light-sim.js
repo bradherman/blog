@@ -18,6 +18,11 @@
   var VIEW_MAX = 60;
   var TRACE_WINDOW = 100; // seconds retained by the space-time diagram
 
+  /* Ceiling on the seeded queue. At the widest parking gap the slider offers,
+     120 vehicles reach about 1.4 km back — still short of the spawn point, so
+     the queue never has to be built on top of arriving traffic. */
+  var MAX_QUEUE = 120;
+
   /* The gap a driver keeps once rolling, and how close the first vehicle parks
      to the stop line. Both are separate from the gap a driver leaves when
      *parking* behind a stationary car, which is the slider. Conflating those two
@@ -181,7 +186,7 @@
   function LightSim() {
     this.params = {
       tau: 1.2, s0: 2.0, accel: 1.8, headway: 1.2,
-      green: 30, demand: 1400, limit: 50
+      green: 30, demand: 1400, limit: 50, queue: 40
     };
     this.YELLOW = 3.5;
     this.RED = 24;
@@ -223,18 +228,16 @@
     this.human.tau = this.params.tau;
     this.cyclesDone = 0;
 
-    /* Start with a queue already standing at the line, sized to a full cycle's
-       arrivals so the very first green is saturated. Seeding only a red's worth
-       leaves the first green under-subscribed, and the first green is the one
-       every reader watches. */
+    /* Start with a queue already standing at the line. This is a control rather
+       than something derived from demand, because deriving it guarantees the
+       uninteresting case: a queue sized to one cycle's arrivals is by
+       construction a queue one green can clear, so the light always runs out of
+       cars before it runs out of green. A signal that is genuinely over
+       capacity has a queue left standing when it goes back to red, and the only
+       way to put that on screen in the first few seconds — rather than after
+       the ten-odd cycles it takes to accumulate — is to seed it. */
     var drv = this.driver();
-    /* Roughly two cycles' worth of arrivals. One cycle's worth leaves the first
-       few greens demand-limited rather than capacity-limited, and until the
-       approach is saturated the three lanes all clear everything and the
-       comparison reads as a flat zero. */
-    var n = T.clamp(
-      Math.round((this.params.demand / 3600) * (this.RED + this.params.green) * 1.9),
-      8, 80);
+    var n = T.clamp(Math.round(this.params.queue), 0, MAX_QUEUE);
     for (var k = 0; k < this.streams.length; k++) this.seedQueue(this.streams[k], n, drv);
   };
 
@@ -721,11 +724,13 @@
 
     var ranges = {
       tau: 'ls-tau', s0: 'ls-gap', accel: 'ls-accel',
-      headway: 'ls-headway', green: 'ls-green', demand: 'ls-demand'
+      headway: 'ls-headway', green: 'ls-green', demand: 'ls-demand',
+      queue: 'ls-queue'
     };
     var units = {
       tau: [' s', 1], s0: [' m', 1], accel: [' m/s²', 1],
-      headway: [' s', 1], green: [' s', 0], demand: [' veh/h', 0]
+      headway: [' s', 1], green: [' s', 0], demand: [' veh/h', 0],
+      queue: [' cars', 0]
     };
 
     function syncOutputs() {
@@ -737,10 +742,17 @@
     }
 
     function readControls() {
+      var queueBefore = sim.params.queue;
       Object.keys(ranges).forEach(function (k) {
         var el = document.getElementById(ranges[k]);
         if (el) sim.params[k] = parseFloat(el.value);
       });
+      /* Every other slider is a property of the drivers or the signal, so the
+         running model just picks it up on the next step. The queue is an
+         initial condition, and the only honest way to change one is to start
+         over — otherwise the reader would be watching a queue that materialised
+         out of nothing behind cars already moving. */
+      if (sim.params.queue !== queueBefore) sim.reset();
       syncOutputs();
     }
 

@@ -29,6 +29,17 @@ back":
 - **move** — behind a moving car, and in free driving.
 - **line** — at the stop line itself, which nobody parks four metres short of.
 
+## The standing queue
+
+How many cars are already waiting when the signal run starts is a control, not
+something derived from the arrival rate. Deriving it guarantees the boring case:
+a queue sized to one cycle's arrivals is by construction a queue that one green
+can clear, so the light always runs out of cars before it runs out of green, and
+the reader never sees the thing the post is about. Seeding it directly puts an
+oversaturated approach on screen immediately rather than after the ten or so
+cycles it would otherwise take to accumulate. Changing it restarts the run,
+because an initial condition cannot be edited halfway through one.
+
 ## Measurement
 
 Saturation headway and start-up lost time are measured the way a field engineer

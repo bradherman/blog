@@ -258,6 +258,11 @@
           <input type="range" id="ls-demand" min="300" max="1800" step="25" value="1400">
           <output id="ls-demand-val" for="ls-demand">1400 veh/h</output>
         </div>
+        <div class="ctrl ctrl-wide">
+          <label for="ls-queue">Cars already queued when it starts <span class="ctrl-note">— restarts the run</span></label>
+          <input type="range" id="ls-queue" min="0" max="80" step="1" value="40">
+          <output id="ls-queue-val" for="ls-queue">40 cars</output>
+        </div>
       </div>
 
       <div class="rig-stats rig-stats-split" role="group" aria-label="Measured results">

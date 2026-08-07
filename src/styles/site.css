@@ -802,6 +802,8 @@ pre code {
 
 .ctrl { display: grid; grid-template-columns: 1fr auto; gap: .12rem .5rem; align-items: baseline; }
 .ctrl label { font-size: .8rem; color: var(--ink-2); }
+/* For a control whose effect is not just "the model picks up a new number". */
+.ctrl-note { color: var(--ink-3); }
 .ctrl output {
   font-family: var(--font-mono);
   font-size: .74rem;
