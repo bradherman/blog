@@ -23,6 +23,22 @@
      the queue never has to be built on top of arriving traffic. */
   var MAX_QUEUE = 120;
 
+  /* Entering traffic joins at the free-flow speed, so the spawn point needs the
+     gap a driver at that speed would actually keep, not merely enough tarmac to
+     avoid an overlap. Six metres is a 0.4 s headway at 50 km/h: every vehicle
+     admitted into it brakes hard, the one behind brakes harder, and the entry
+     jams while a kilometre and a half of road sits empty. */
+  function entryGap(drv) { return drv.s0 + drv.v0 * drv.T; }
+  /* Shortest headway between two scheduled arrivals. Real traffic has one, and
+     modelling it as a shift on the exponential rather than a clamp is the whole
+     difference: clamping discards every short gap and silently lowers the mean,
+     so the slider delivers less flow than it reads. */
+  var MIN_HEADWAY = 0.6;
+  /* How many due-but-unplaced vehicles to keep waiting. Reaching this means the
+     queue has run off the far end of the modelled road, which is the one case
+     where losing an arrival is the honest answer rather than a bug. */
+  var MAX_BACKLOG = 200;
+
   /* The gap a driver keeps once rolling, and how close the first vehicle parks
      to the stop line. Both are separate from the gap a driver leaves when
      *parking* behind a stationary car, which is the slider. Conflating those two
@@ -46,6 +62,7 @@
        stream — nobody waits for room to open either. It is what a train does. */
     this.lockstep = !!lockstep;
     this.cars = [];        // ordered downstream -> upstream (index 0 leads)
+    this.pending = [];     // due arrival times with nowhere to be put yet
     this.platoon = [];     // stop-line crossing times in the current green
     this.launches = [];    // {x, t} release events in the current green
     this.history = [];     // last few completed greens
@@ -56,6 +73,7 @@
 
   Stream.prototype.reset = function () {
     this.cars.length = 0;
+    this.pending.length = 0;
     this.platoon.length = 0;
     this.launches.length = 0;
     this.history.length = 0;
@@ -186,7 +204,7 @@
   function LightSim() {
     this.params = {
       tau: 1.2, s0: 2.0, accel: 1.8, headway: 1.2,
-      green: 30, demand: 1400, limit: 50, queue: 40
+      green: 30, demand: 1150, limit: 50, queue: 40
     };
     this.YELLOW = 3.5;
     this.RED = 24;
@@ -473,31 +491,48 @@
     var drv = d.move;
     this.human.tau = this.params.tau;
 
-    /* Shared arrival schedule: both streams get the identical vehicle at the
+    /* Shared arrival schedule: every stream is due the identical vehicle at the
        identical instant, so any difference downstream is reaction time and
        nothing else. */
     var i;
     while (this.nextArrival <= this.t) {
-      for (i = 0; i < this.streams.length; i++) this.spawn(this.streams[i], drv.v0, drv);
+      for (i = 0; i < this.streams.length; i++) this.streams[i].pending.push(this.nextArrival);
       var rate = Math.max(this.params.demand, 60) / 3600;
-      this.nextArrival += Math.max(0.6, this.rand.exponential(rate));
+      /* Shifted exponential: a floor of MIN_HEADWAY plus an exponential drawn
+         at whatever rate makes the mean gap come out at 1/rate, so the flow the
+         slider asks for is the flow the model schedules. */
+      var tail = 1 / Math.max(1 / rate - MIN_HEADWAY, 0.05);
+      this.nextArrival += MIN_HEADWAY + this.rand.exponential(tail);
     }
+    for (i = 0; i < this.streams.length; i++) this.admit(this.streams[i], drv.v0, drv);
 
     for (i = 0; i < this.streams.length; i++) this.stepStream(this.streams[i], dt, d);
   };
 
-  LightSim.prototype.spawn = function (stream, v0, drv) {
-    var cars = stream.cars;
-    var last = cars.length ? cars[cars.length - 1] : null;
-    /* Don't materialise a vehicle on top of the back of the queue; if the
-       queue has reached the spawn point, the arrival is simply lost (the
-       approach is over capacity, which the metrics will show anyway). */
-    if (last && last.x - CAR_LEN - X_SPAWN < 6) return;
-    var car = new T.Vehicle(X_SPAWN, v0, drv);
-    car.enteredAt = this.t;
-    car.yellowCall = null;
-    car.launchLogged = false;
-    cars.push(car);
+  /* Put due arrivals on the road, oldest first, as far as there is room for
+     them. A vehicle that cannot be placed waits rather than evaporating: the
+     back of a queue is exactly where traffic is densest, so discarding whatever
+     will not fit throws away most of the flow precisely when demand is highest,
+     and the slider ends up delivering a fraction of what it reads.
+
+     A vehicle keeps the time it was *due* as its entry time, not the time room
+     appeared, so waiting to get onto the road counts as delay like any other. */
+  LightSim.prototype.admit = function (stream, v0, drv) {
+    var q = stream.pending, need = entryGap(drv);
+    while (q.length) {
+      var cars = stream.cars;
+      var last = cars.length ? cars[cars.length - 1] : null;
+      if (last && last.x - CAR_LEN - X_SPAWN < need) break;
+      var car = new T.Vehicle(X_SPAWN, v0, drv);
+      car.enteredAt = q.shift();
+      car.yellowCall = null;
+      car.launchLogged = false;
+      cars.push(car);
+    }
+    /* Past this the queue has reached the end of the modelled road. Drop the
+       newest, which is what a full approach does: the vehicles already on it
+       keep their place, and the ones behind never get on. */
+    if (q.length > MAX_BACKLOG) q.length = MAX_BACKLOG;
   };
 
   /* ------------------------------------------------------------------------

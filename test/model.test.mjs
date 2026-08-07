@@ -51,7 +51,7 @@ const note = (s) => console.log(`\n${s}`);
    every discharge figure below depends on the first green being saturated, and
    leaving it to the widget's default would silently re-tune these bands the next
    time that default moves. */
-const BASE = { tau: 1.2, headway: 1.2, accel: 1.8, s0: 2.0, demand: 1500, green: 30, queue: 40 };
+const BASE = { tau: 1.2, headway: 1.2, accel: 1.8, s0: 2.0, demand: 1150, green: 30, queue: 40 };
 
 function light(overrides, seconds = 2400) {
   const sim = new T.LightSim();
@@ -67,10 +67,11 @@ const perGreen = (s) => s.human.crossedTotal / s.cyclesDone;
 
 note('Signal — the start-up wave is spacing over reaction time, plus the ~0.3 s');
 note('         each driver needs before there is physically room to move.');
-/* Measured at the demand the widget itself defaults to. At twice capacity the
-   queue creeps rather than discharging, and the release front is no longer the
-   clean start-up wave the formula describes. */
-const WAVE_DEMAND = 1050;
+/* Measured just above capacity, where the queue stands but does not run away.
+   Deep in oversaturation the whole backlog creeps forward a little each cycle
+   rather than discharging, and the release front stops being the clean start-up
+   wave the formula describes. */
+const WAVE_DEMAND = 900;
 for (const tau of [0.8, 1.2, 1.6, 2.0, 2.5]) {
   const w = light({ tau, demand: WAVE_DEMAND }).human.avg('wave') * T.KMH;
   const predicted = ((T.CAR_LEN + 2.0) / (tau + 0.3)) * T.KMH;
@@ -89,6 +90,37 @@ note('Signal — with zero reaction the wave does not vanish: geometry sets a fl
   check('tau=0 wave speed (geometric floor)', w0, 18, 30, ' km/h');
 }
 
+note('Signal — the demand slider delivers the flow it reads');
+{
+  /* Every lever below is measured as a change in vehicles per green, so an
+     arrival process that quietly feeds the model less traffic than asked for
+     moves all of them. The rule this replaces dropped any arrival landing
+     within a car length of the previous one, which at Poisson gaps is most of
+     the short ones: a slider reading 1400 veh/h fed the model 1029, and the
+     shortfall grew with demand, which is exactly where it does most damage.
+
+     Checked below capacity, where nothing should be turned away at all. Above
+     it the queue reaches the end of the modelled road and losing arrivals is
+     the honest answer rather than a bug.
+
+     The band is ±10% because this is the sample mean of one 2400 s draw, not a
+     limit: the same generator run over 40 seeds averages 0.997 with a standard
+     deviation of 4%. It is still a wide margin on what it is looking for — the
+     old rule ran at 0.82. */
+  const fed = (demand) => {
+    const sim = light({ demand, green: 60 }, 2400);
+    const waiting = sim.human.cars.filter((c) => c.x < 0).length;
+    const admitted = sim.human.crossedTotal + waiting - sim.params.queue;
+    return { rate: (admitted / 2400) * 3600, admitted: admitted, backlog: sim.human.pending.length };
+  };
+  for (const d of [600, 900]) {
+    const r = fed(d);
+    check(`${d} veh/h asked for is ${d} veh/h fed in`, r.rate / d, 0.90, 1.10, '×');
+    check('and next to nothing waits at the entry',
+          (r.backlog / r.admitted) * 100, 0, 1, ' %');
+  }
+}
+
 /* ------------------------------------------------ what each lever is worth */
 
 note('Signal — the post\'s central claim: no single fix buys much, because');
@@ -105,7 +137,7 @@ check('all four together (platoon)',
 
 note('Signal — the three release regimes are genuinely distinct');
 {
-  const sim = light({ demand: 1400 }, 1800);
+  const sim = light({ demand: 1150 }, 1800);
   const per = (st) => st.crossedTotal / sim.cyclesDone;
   const h = per(sim.human), z = per(sim.ideal), r = per(sim.rigid);
   console.log(`       human ${h.toFixed(2)} · zero-reaction ${z.toFixed(2)} · as-one-body ${r.toFixed(2)} veh/green`);
@@ -173,7 +205,7 @@ note('Signal — a wider stopped gap lengthens the queue');
   /* Sample at the end of red, when the queue is fully formed. Sampling at an
      arbitrary instant can catch a green with the queue already discharged. */
   const spacing = (s0) => {
-    const sim = light({ s0, demand: 1200 }, 900);
+    const sim = light({ s0, demand: 950 }, 900);
     for (let i = 0; i < 120 / (1 / 60); i++) {
       sim.step(1 / 60);
       if (sim.phase === 'red' && sim.phaseEnds - sim.t < 0.5) break;

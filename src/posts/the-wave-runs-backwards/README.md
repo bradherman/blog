@@ -50,6 +50,26 @@ the front of the queue.
 Arrivals come from a seeded generator, so the three merge strategies are compared
 against an identical vehicle-by-vehicle sequence.
 
+## Arrivals at the signal
+
+Gaps are a shifted exponential: a 0.6 s floor plus an exponential drawn at
+whatever rate makes the mean come out at the demand asked for. A truncated
+exponential would be wrong in a way that matters — clamping discards every short
+gap and quietly lowers the mean, so the slider delivers less flow than it reads.
+
+A vehicle that is due but has nowhere to go waits rather than evaporating, and
+keeps its due time as its entry time so that waiting counts as delay. It is
+admitted once the entry point has the gap a driver at free-flow speed would
+actually keep, which is `s₀ + v₀T` — around 19 m at the default settings, not
+the vehicle length it would take to merely avoid an overlap. Admitting into a
+bumper gap puts every entrant into an emergency stop and jams the entry while
+the road behind it sits empty; the throughput that comes out of that is the
+model's boundary, not traffic.
+
+Only once the backlog reaches 200 vehicles is an arrival written off. That means
+the queue has reached the far end of the modelled road, which is the one case
+where losing it is the honest answer.
+
 ## Speed
 
 The speed section uses Nilsson's power model (exponents 4 / 3 / 2), stopping
