@@ -189,6 +189,7 @@ main > section,
 main > section > * { grid-column: text; }
 main > section { grid-column: full; }
 main > section > .rig,
+main > section > .post-figure,
 main > section > .post-hero { grid-column: wide; }
 
 .masthead { row-gap: .85rem; padding: 5.5rem 0 3rem; }
@@ -379,6 +380,118 @@ sup a {
 }
 sup a:hover { text-decoration: underline; }
 :target { scroll-margin-top: 2rem; }
+
+/* -- prose ---------------------------------------------------------------- */
+/* The ordinary furniture of an article: lists, quotes, code, tables, figures.
+   A Markdown post is made entirely of these, but nothing here is specific to
+   Markdown — a hand-written post that needs a table gets the same one.
+   Vertical rhythm comes from the section's row-gap, so block margins stay at
+   zero unless an element genuinely needs to sit tighter or looser. */
+
+/* Code and tables are the two things that can be wider than the column; both
+   scroll inside themselves rather than pushing the page sideways. */
+main > section > pre,
+main > section > .table-wrap { min-width: 0; }
+
+ul, ol { margin: 0; padding-left: 1.4rem; }
+li::marker { color: var(--ink-3); }
+/* Item spacing is scoped, because the bespoke lists elsewhere on the site
+   (.refs, ol.numbered) set their own rhythm and would inherit this on top of
+   it. Everything else in this block is safe to apply globally. */
+.prose li + li,
+.prose li > ul,
+.prose li > ol { margin-top: .3rem; }
+
+blockquote {
+  margin: 0;
+  padding: .1rem 0 .1rem 1.25rem;
+  border-left: 2px solid var(--accent);
+  color: var(--ink-2);
+  font-style: italic;
+}
+blockquote p + p { margin-top: .7rem; }
+
+hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 1.1rem 0;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: .87em;
+  background: var(--surface-2);
+  border: 1px solid var(--rule-soft);
+  border-radius: 3px;
+  padding: .08em .32em;
+}
+
+pre {
+  margin: 0;
+  padding: .95rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  overflow-x: auto;
+  font-size: .85rem;
+  line-height: 1.55;
+}
+pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+
+.table-wrap { overflow-x: auto; }
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-ui);
+  font-size: .92rem;
+}
+.table-wrap th,
+.table-wrap td {
+  padding: .5rem .7rem .5rem 0;
+  text-align: left;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.table-wrap thead th {
+  font-family: var(--font-mono);
+  font-size: .68rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 400;
+  color: var(--ink-3);
+  border-bottom: 1px solid var(--rule);
+}
+.table-wrap tbody tr:last-child td { border-bottom: 0; }
+
+/* a figure inside the article, as opposed to the one that opens it */
+.post-figure { margin: .3rem 0; }
+.post-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+  border: 1px solid var(--rule);
+}
+.post-figure figcaption {
+  font-family: var(--font-ui);
+  font-size: .76rem;
+  color: var(--ink-3);
+  padding-top: .55rem;
+}
+
+/* the ↩ that takes you back to where you were reading */
+.ref-back {
+  font-family: var(--font-mono);
+  font-size: .82em;
+  text-decoration: none;
+  color: var(--ink-3);
+}
+.ref-back:hover { color: var(--accent-ink); }
 
 /* -- equation ------------------------------------------------------------- */
 

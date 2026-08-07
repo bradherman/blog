@@ -14,18 +14,66 @@ export const formatDate = (iso) =>
     day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC'
   });
 
-function head({ site, title, description, canonical, extraCss }) {
+/* Everything a link preview needs, in one place. Facebook, LinkedIn, Slack and
+   iMessage read the og:* tags; Twitter/X prefers twitter:* and falls back to
+   og:*, but it is stated explicitly so a summary_large_image card can never be
+   declared without the image it promises. Absolute URLs are required here —
+   every crawler resolves these without a base. */
+function social({ site, title, description, canonical, card }) {
+  const tags = [
+    `<meta property="og:type" content="${card.type}">`,
+    `<meta property="og:site_name" content="${esc(site.title)}">`,
+    `<meta property="og:title" content="${plain(title)}">`,
+    `<meta property="og:description" content="${plain(description)}">`,
+    `<meta property="og:url" content="${esc(canonical)}">`,
+    `<meta property="og:locale" content="en_US">`
+  ];
+
+  if (card.image) {
+    tags.push(
+      `<meta property="og:image" content="${esc(card.image)}">`,
+      `<meta property="og:image:type" content="${esc(card.imageType || 'image/png')}">`,
+      `<meta property="og:image:width" content="${card.imageWidth}">`,
+      `<meta property="og:image:height" content="${card.imageHeight}">`,
+      `<meta property="og:image:alt" content="${plain(card.imageAlt || title)}">`
+    );
+  }
+
+  if (card.type === 'article') {
+    tags.push(`<meta property="article:published_time" content="${esc(card.published)}">`);
+    tags.push(`<meta property="article:author" content="${esc(site.author)}">`);
+    for (const tag of card.tags || []) {
+      tags.push(`<meta property="article:tag" content="${esc(tag)}">`);
+    }
+  }
+
+  /* Without an image, a large-image card renders as a bare link. Degrade to the
+     small card rather than promising art that isn't there. */
+  tags.push(
+    `<meta name="twitter:card" content="${card.image ? 'summary_large_image' : 'summary'}">`,
+    `<meta name="twitter:title" content="${plain(title)}">`,
+    `<meta name="twitter:description" content="${plain(description)}">`
+  );
+  if (card.image) {
+    tags.push(`<meta name="twitter:image" content="${esc(card.image)}">`);
+    tags.push(`<meta name="twitter:image:alt" content="${plain(card.imageAlt || title)}">`);
+  }
+  if (site.twitter) {
+    tags.push(`<meta name="twitter:site" content="${esc(site.twitter)}">`);
+    tags.push(`<meta name="twitter:creator" content="${esc(site.twitter)}">`);
+  }
+
+  return tags.join('\n');
+}
+
+function head({ site, title, socialTitle, description, canonical, card, extraCss }) {
   return `<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
 <meta name="description" content="${plain(description)}">
+<meta name="author" content="${esc(site.author)}">
 <link rel="canonical" href="${esc(canonical)}">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="${esc(site.title)}">
-<meta property="og:title" content="${plain(title)}">
-<meta property="og:description" content="${plain(description)}">
-<meta property="og:url" content="${esc(canonical)}">
-<meta name="twitter:card" content="summary_large_image">
+${social({ site, title: socialTitle || title, description, canonical, card })}
 <link rel="alternate" type="application/atom+xml" href="/feed.xml" title="${esc(site.title)}">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/styles/site.css">${extraCss || ''}
@@ -50,7 +98,7 @@ function siteFooter(site) {
 </footer>`;
 }
 
-export function renderPost({ site, meta, body }) {
+export function renderPost({ site, meta, body, card = {} }) {
   const canonical = `${site.origin}/${meta.slug}/`;
   const scripts = ['/scripts/site.js']
     .concat(meta.scripts || [])
@@ -59,7 +107,22 @@ export function renderPost({ site, meta, body }) {
   return `<!doctype html>
 <html lang="en">
 <head>
-${head({ site, title: `${meta.title} — ${site.title}`, description: meta.description, canonical })}
+${head({
+  site,
+  title: `${meta.title} — ${site.title}`,
+  /* og:site_name already names the site; repeating it in the card title just
+     eats the two lines a preview gets. */
+  socialTitle: meta.title,
+  description: meta.description,
+  canonical,
+  card: {
+    ...card,
+    type: 'article',
+    published: meta.date,
+    tags: meta.tags,
+    imageAlt: card.imageAlt || `${plain(meta.title)} — ${site.title}`
+  }
+})}
 </head>
 <body class="page-post">
 ${CHROME_TOP}
@@ -83,7 +146,7 @@ ${scripts}
 `;
 }
 
-export function renderHome({ site, posts }) {
+export function renderHome({ site, posts, card = {} }) {
   const items = posts
     .map(
       (p) => `    <li class="post-item">
@@ -103,7 +166,13 @@ export function renderHome({ site, posts }) {
   return `<!doctype html>
 <html lang="en">
 <head>
-${head({ site, title: `${site.title} — ${site.tagline}`, description: site.description, canonical: site.origin + '/' })}
+${head({
+  site,
+  title: `${site.title} — ${site.tagline}`,
+  description: site.description,
+  canonical: site.origin + '/',
+  card: { ...card, type: 'website', imageAlt: card.imageAlt || `${site.title} — ${site.tagline}` }
+})}
 </head>
 <body class="page-home">
 ${CHROME_TOP}

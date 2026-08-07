@@ -1,9 +1,11 @@
 # Deploy blog.bherms.com to Cloudflare Workers Assets.
 #
-# The model tests run before the build, and a failure stops the deploy. That
-# ordering is the point: test/model.test.mjs asserts every quantitative claim
-# the traffic post makes in prose, so a simulator change that moves one of
-# those numbers fails here rather than shipping a post that contradicts itself.
+# The tests run before the build, and a failure stops the deploy. That ordering
+# is the point: test/model.test.mjs asserts every quantitative claim the traffic
+# post makes in prose, so a simulator change that moves one of those numbers
+# fails here rather than shipping a post that contradicts itself, and
+# test/site.test.mjs asserts that every page still ships a share card and the
+# tags that go with it.
 
 name: Deploy
 
@@ -35,7 +37,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Model checks
+      - name: Model and pipeline checks
         run: npm test
 
       - name: Build

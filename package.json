@@ -7,9 +7,15 @@
 		"build": "node build.mjs",
 		"dev": "node build.mjs && wrangler dev",
 		"deploy": "node build.mjs && wrangler deploy",
-		"test": "node test/model.test.mjs"
+		"new": "node scripts/new-post.mjs",
+		"test": "node test/model.test.mjs && node test/site.test.mjs"
 	},
 	"devDependencies": {
+		"@expo-google-fonts/charis-sil": "^0.4.0",
+		"@expo-google-fonts/roboto-mono": "^0.4.2",
+		"@resvg/resvg-js": "^2.6.2",
+		"fontkit": "^2.0.4",
+		"marked": "^18.0.9",
 		"wrangler": "^4.112.0"
 	}
 }

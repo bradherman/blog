@@ -15,6 +15,9 @@ export default {
   aiPolicy:
     'Written by me, sometimes with a bit of help, but if it is mostly AI, ' +
     'I will be explicit about it.',
+  /* Set to an @handle to claim shared links on Twitter/X. Left unset, the
+     card still renders; it just isn't attributed to an account. */
+  twitter: null,
   /* bherms.com is the canonical site; bradleytherman.com forwards to it. */
   nav: [
     { label: 'Writing', href: '/' },
